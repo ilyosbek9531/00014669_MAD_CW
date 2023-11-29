@@ -58,10 +58,12 @@ fun ParfumesList(
 
         val resParfumes by viewModel.parfumesLiveData.observeAsState()
 
+        val resReversedParfumes = resParfumes?.reversed()
+
         val parfumes = if (showFiltered == "1") {
-            resParfumes?.filter { it.isItTrue == "1" } ?: emptyList()
+            resReversedParfumes?.filter { it.isItTrue == "1" } ?: emptyList()
         } else {
-            resParfumes ?: emptyList()
+            resReversedParfumes ?: emptyList()
         }
 
         if (!parfumes.isNullOrEmpty()) {

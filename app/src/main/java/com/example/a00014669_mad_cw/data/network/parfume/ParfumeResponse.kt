@@ -13,7 +13,7 @@ data class ParfumeResponse(
     val volumes: List<ParfumeResponseDoubleListItem>? = null,
     @SerializedName("price")
     val price: Double?,
-    @SerializedName("created_at")
+    @SerializedName("date")
     val releaseDate: String?,
     @SerializedName("url")
     val image: String?,
