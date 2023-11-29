@@ -1,4 +1,4 @@
-package com.example.a00014669_mad_cw.navigation
+package com.example.a00014669_mad_cw.reusibles
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -26,7 +26,9 @@ import com.example.a00014669_mad_cw.R
 
 @Composable
 fun FixedNavigation(
-    onNavigateMyProducts: () -> Unit, onAddNewMovieClick: () -> Unit
+    onNavigateMyProducts: () -> Unit,
+    onNavigateAllProducts: () -> Unit,
+    onNavigateCreate: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -58,13 +60,13 @@ fun FixedNavigation(
                     modifier = Modifier,
                     icon = R.drawable.baseline_manage_search_24,
                     text = stringResource(id = R.string.btn_all_products),
-                    onClick = onNavigateMyProducts
+                    onClick = onNavigateAllProducts
                 )
                 CustomIconAndText(
                     modifier = Modifier,
                     icon = R.drawable.baseline_create_new_folder_24,
                     text = stringResource(id = R.string.btn_create),
-                    onClick = onNavigateMyProducts
+                    onClick = onNavigateCreate
                 )
             }
         }

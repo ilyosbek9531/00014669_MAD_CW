@@ -8,26 +8,30 @@ import com.example.a00014669_mad_cw.data.network.MyResponse
 import com.example.a00014669_mad_cw.data.network.RetrofitInstance
 import com.example.a00014669_mad_cw.data.network.parfume.ParfumeRequest
 import com.example.a00014669_mad_cw.data.network.parfume.ParfumeResponse
-import com.example.a00014669_mad_cw.data.network.parfume.ParfumeResponseActorItem
 
 class ParfumeRepository {
-    suspend fun getMovieList(): List<Parfume> {
-        val movies = mutableListOf<Parfume>()
+    suspend fun getParfumeList(): List<Parfume> {
+        val parfumes = mutableListOf<Parfume>()
 
         try {
             val response: MyListResponse<ParfumeResponse> =
-                RetrofitInstance.movieService.getAllMovies("movie")
-            val moviesFromResponse = response.data
+                RetrofitInstance.parfumeService.getAllParfumes("00014669")
+            val parfumesFromResponse = response.data
 
-            if (moviesFromResponse != null) {
+            if (parfumesFromResponse != null) {
 
-                for (movieFromResponse in moviesFromResponse) {
-                    if (movieFromResponse.description != null) {
-                        movies.add(
+                for (parfumeFromResponse in parfumesFromResponse) {
+                    if (parfumeFromResponse.description != null) {
+                        parfumes.add(
                             Parfume(
-                                id = movieFromResponse.id.toString(),
-                                name = movieFromResponse.name.uppercase(),
-                                description = movieFromResponse.description
+                                id = parfumeFromResponse.id.toString(),
+                                title = parfumeFromResponse.title,
+                                description = parfumeFromResponse.description,
+                                price = parfumeFromResponse.price,
+                                image = parfumeFromResponse.image,
+                                origin = parfumeFromResponse.origin,
+                                volumes = parfumeFromResponse.volumes,
+                                isItTrue = parfumeFromResponse.isItTrue
                             )
                         )
                     }
@@ -37,26 +41,28 @@ class ParfumeRepository {
             ex.printStackTrace()
         }
 
-        return movies
+        return parfumes
     }
 
-    suspend fun insertNewMovie(movie: Parfume): MyResponse? {
+    suspend fun insertNewParfume(parfume: Parfume): MyResponse? {
         val response: MyResponse
 
         try {
-            val movieRequest =
+            val parfumeRequest =
                 ParfumeRequest(
-                    name = movie.name,
-                    description = movie.description,
-                    actors = movie.actors,
-                    budget = movie.budget,
-                    rating = movie.rating,
-                    releaseDate = movie.releaseDate
+                    title = parfume.title,
+                    description = parfume.description,
+                    price = parfume.price,
+                    releaseDate = parfume.releaseDate,
+                    image = parfume.image,
+                    origin = parfume.origin,
+                    volumes = parfume.volumes,
+                    isItTrue = parfume.isItTrue
                 )
 
-            response = RetrofitInstance.movieService.insertNewMovie(
-                "movie",
-                movieRequest
+            response = RetrofitInstance.parfumeService.insertNewParfume(
+                "00014669",
+                parfumeRequest
             )
 
             Log.d("Update_response", response.toString())
@@ -68,23 +74,25 @@ class ParfumeRepository {
         return response
     }
 
-    suspend fun getMovieById(movieId: String): Parfume? {
+    suspend fun getParfumeById(parfumeId: String): Parfume? {
         try {
             val response: MyItemResponse<ParfumeResponse> =
-                RetrofitInstance.movieService.getOneMovieById(movieId, "movie")
-            val movieFromResponse = response.data
+                RetrofitInstance.parfumeService.getOneParfumeById(parfumeId, "00014669")
+            val parfumeFromResponse = response.data
 
-            if (movieFromResponse != null) {
-                if (movieFromResponse.description != null
+            if (parfumeFromResponse != null) {
+                if (parfumeFromResponse.description != null
                 ) {
                     return Parfume(
-                        id = movieId,
-                        name = movieFromResponse.name,
-                        description = movieFromResponse.description,
-                        actors = extractListOfActorsFromResponse(movieFromResponse.actors),
-                        budget = movieFromResponse.budget,
-                        rating = movieFromResponse.rating,
-                        releaseDate = formatReleaseDate(movieFromResponse.releaseDate)
+                        id = parfumeId,
+                        title = parfumeFromResponse.title,
+                        description = parfumeFromResponse.description,
+                        price = parfumeFromResponse.price,
+                        image = parfumeFromResponse.image,
+                        origin = parfumeFromResponse.origin,
+                        volumes = parfumeFromResponse.volumes,
+                        releaseDate = formatReleaseDate(parfumeFromResponse.releaseDate),
+                        isItTrue = parfumeFromResponse.isItTrue
                     )
                 }
             }
@@ -96,25 +104,22 @@ class ParfumeRepository {
         return null
     }
 
-    private fun extractListOfActorsFromResponse(
-        actorsFromResponse: List<ParfumeResponseActorItem>
-    ): List<String> {
+    suspend fun deleteParfumeById(parfumeId: String): MyResponse? {
+        val response: MyResponse
+        try {
+            response = RetrofitInstance.parfumeService.deleteOneParfumeById(parfumeId, "00014669")
 
-        val myActors = mutableListOf<String>()
-
-        for (actorObj in actorsFromResponse) {
-            myActors.add(actorObj.actorName)
+            Log.d("Update_response", response.toString())
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
         }
-
-        return myActors
+        return response
     }
+
 
     private fun formatReleaseDate(releaseDate: String?): String {
         if (releaseDate.isNullOrEmpty()) return ""
-
-        //release date will come in the format "YYYY-MM-DD HH:MM:SS". We should trim the "time" part
-        //in Kotlin there is a special function for that, called "dropLast(number of characters to trim)"
-
         return releaseDate.dropLast(9)
     }
 }

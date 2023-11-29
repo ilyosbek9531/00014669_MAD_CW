@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="bg">#FF333333</color>
+    <color name="grey_text">#FFC6BFBF</color>
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
@@ -9,4 +11,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="bleak_yellow">#E8E4BE</color>
     <color name="bleak_yellow_light">#F6F3D5</color>
+    <color name="edit_color">#FF398862</color>
+    <color name="delete_color">#FF752525</color>
 </resources>

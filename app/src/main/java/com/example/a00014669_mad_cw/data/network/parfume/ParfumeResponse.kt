@@ -6,15 +6,19 @@ data class ParfumeResponse(
     @SerializedName("id")
     val id: Int,
     @SerializedName("title")
-    val name: String,
+    val title: String,
     @SerializedName("description")
     val description: String?,
-    @SerializedName("text_list")
-    val actors: List<ParfumeResponseActorItem>,
-    @SerializedName("size") //the API has no "budget" field
-    val budget: Int?,
-    @SerializedName("price") //the API has no "rating" field
-    val rating: Double?,
-    @SerializedName("date")
-    val releaseDate: String?
+    @SerializedName("double_list")
+    val volumes: List<ParfumeResponseDoubleListItem>? = null,
+    @SerializedName("price")
+    val price: Double?,
+    @SerializedName("created_at")
+    val releaseDate: String?,
+    @SerializedName("url")
+    val image: String?,
+    @SerializedName("type")
+    val origin: String?,
+    @SerializedName("is_it_true")
+    val isItTrue: String?
 )

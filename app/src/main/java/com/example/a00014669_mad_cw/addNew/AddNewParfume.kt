@@ -5,6 +5,7 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -32,79 +33,84 @@ import com.example.a00014669_mad_cw.MainActivity
 import com.example.a00014669_mad_cw.R
 import com.example.a00014669_mad_cw.data.ParfumeRepository
 import com.example.a00014669_mad_cw.data.dataClasses.Parfume
+import com.example.a00014669_mad_cw.data.network.parfume.ParfumeResponseDoubleListItem
+import com.example.a00014669_mad_cw.reusibles.FixedNavigation
+import com.example.a00014669_mad_cw.reusibles.ParfumeListHeader
+import com.google.gson.annotations.SerializedName
 import java.text.ParseException
 import java.text.SimpleDateFormat
 
 
 @Composable
 fun AddNewParfume(
-    viewModel: AddNewParfumeViewModel = AddNewParfumeViewModel(ParfumeRepository())
+    viewModel: AddNewParfumeViewModel = AddNewParfumeViewModel(ParfumeRepository()),
+    onNavigateMyProducts: () -> Unit,
+    onNavigateAllProducts: () -> Unit,
+    onNavigateCreate: () -> Unit
 ) {
     val localContext = LocalContext.current
 
-    val name = remember { mutableStateOf("") }
+    val title = remember { mutableStateOf("") }
+    val image = remember { mutableStateOf("") }
     val description = remember { mutableStateOf("") }
-    val budget = remember { mutableStateOf("") }
+    val price = remember { mutableStateOf("") }
     val releaseDate = remember { mutableStateOf("") }
-    val actors = remember { mutableStateOf("") }
-    val ratingOptions = listOf("1", "1.5", "2", "2.5", "3", "3.5", "4", "4.5", "5")
-    val isRatingExpanded = remember {
+    val originOptions = listOf(
+        "Uzbekistan", "Russia", "China", "Germany", "USA", "France", "Qatar", "England", "Singapure"
+    )
+    val isOriginExpanded = remember {
         mutableStateOf(false)
     }
-    val selectedRatingText = remember { mutableStateOf(ratingOptions[0]) }
+    val volumeOptions = listOf(50, 100, 150, 200, 300, 400, 500).toMutableList()
+    val selectedValues = remember { mutableListOf<Int>() }
+    val selectedOriginText = remember { mutableStateOf(originOptions[0]) }
 
     val response by viewModel.insertResponseLiveData.observeAsState()
-
-    Box(modifier = Modifier.fillMaxSize()) {
+    
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = colorResource(id = R.color.bg)
+            )
+    ) {
+        ParfumeListHeader(hasSearch = false)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = Color.White)
-                .padding(16.dp)
+                .padding(8.dp, 60.dp, 8.dp, 140.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            CreateNewMoviePageTitle()
+            CreateNewParfumePageTitle()
             Spacer(modifier = Modifier.height(15.dp))
-            NameInput(name = name.value, onNameChange = { name.value = it })
+            TitleInput(title = title.value, onTitleChange = { title.value = it })
+            Spacer(modifier = Modifier.height(15.dp))
+            ImageInput(image = image.value, onImageChange = { image.value = it })
             Spacer(Modifier.height(16.dp))
-            DescriptionInput(description = description.value,
+            DescriptionInput(
+                description = description.value,
                 onDescriptionChange = { description.value = it })
             Spacer(modifier = Modifier.height(15.dp))
-            Budget(budget = budget.value, onBudgetChanged = { budget.value = it })
-            ReleaseDate(releaseDate = releaseDate.value,
+            VolumeOptions(volumeOptions, selectedValues)
+            Spacer(modifier = Modifier.height(15.dp))
+            Price(price = price.value, onPriceChanged = { price.value = it })
+            ReleaseDate(
+                releaseDate = releaseDate.value,
                 onReleaseDateChanged = { releaseDate.value = it })
             Spacer(modifier = Modifier.height(15.dp))
-            ActorsInput(actors = actors.value, onActorsChange = { actors.value = it })
             Spacer(modifier = Modifier.height(15.dp))
-            Rating(
-                isExpanded = isRatingExpanded.value,
-                onExpandedChanged = { isRatingExpanded.value = !isRatingExpanded.value },
-                selectedOptionText = selectedRatingText.value,
-                onSelectedOptionChanged = { selectedRatingText.value = it },
-                options = ratingOptions
+            Origin(
+                isExpanded = isOriginExpanded.value,
+                onExpandedChanged = { isOriginExpanded.value = !isOriginExpanded.value },
+                selectedOptionText = selectedOriginText.value,
+                onSelectedOptionChanged = { selectedOriginText.value = it },
+                options = originOptions
             )
 
             // actors text input - comma separated 4x
 
             Spacer(Modifier.height(16.dp))
-            AddNewButton {
-                val constructedMovie: Parfume? = constructMovieIfInputValid(
-                    nameInput = name.value,
-                    descriptionInput = description.value,
-                    budgetInput = budget.value,
-                    releaseDateInput = releaseDate.value,
-                    actorsInput = actors.value,
-                    ratingInput = selectedRatingText.value,
-                    context = localContext
-                )
 
-                if (constructedMovie != null
-                ) {
-                    viewModel.saveNewMovie(
-                        constructedMovie
-                    )
-                }
-            }
         }
 
         if (response != null) {
@@ -121,16 +127,57 @@ fun AddNewParfume(
                 localContext.startActivity(Intent(localContext, MainActivity::class.java))
             }
         }
-    }
 
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 80.dp),
+
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    AddNewButton {
+                        val constructedParfume: Parfume? = constructParfumeIfInputValid(
+                            titleInput = title.value,
+                            imageInput = image.value,
+                            descriptionInput = description.value,
+                            priceInput = price.value,
+                            releaseDateInput = releaseDate.value,
+                            originInput = selectedOriginText.value,
+                            context = localContext,
+                            selectedValues = selectedValues.toList()
+                        )
+
+                        if (constructedParfume != null) {
+                            viewModel.saveNewParfume(
+                                constructedParfume
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+    FixedNavigation(onNavigateMyProducts, onNavigateAllProducts, onNavigateCreate)
 }
 
 @Composable
-private fun CreateNewMoviePageTitle() {
+private fun CreateNewParfumePageTitle() {
     Text(
         modifier = Modifier.fillMaxWidth(),
-        text = stringResource(id = R.string.title_activity_add_new_movie),
-        color = Color.Black,
+        text = stringResource(id = R.string.title_activity_add_new_parfume),
+        color = Color.White,
         fontSize = 26.sp,
         fontFamily = FontFamily.Serif,
         textAlign = TextAlign.Center
@@ -140,16 +187,31 @@ private fun CreateNewMoviePageTitle() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun NameInput(name: String, onNameChange: (String) -> Unit) {
+private fun TitleInput(title: String, onTitleChange: (String) -> Unit) {
     TextField(modifier = Modifier.fillMaxWidth(),
         colors = TextFieldDefaults.textFieldColors(
-            textColor = Color.Black, containerColor = colorResource(id = R.color.bleak_yellow_light)
+            textColor = Color.Black, containerColor = Color.White
         ),
-        value = name,
+        value = title,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-        onValueChange = { onNameChange(it) },
+        onValueChange = { onTitleChange(it) },
         label = {
-            Text(stringResource(id = R.string.movie_name_input_hint))
+            Text(stringResource(id = R.string.parfume_title_input_hint))
+        })
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ImageInput(image: String, onImageChange: (String) -> Unit) {
+    TextField(modifier = Modifier.fillMaxWidth(),
+        colors = TextFieldDefaults.textFieldColors(
+            textColor = Color.Black, containerColor = Color.White
+        ),
+        value = image,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+        onValueChange = { onImageChange(it) },
+        label = {
+            Text(stringResource(id = R.string.parfume_image_input_hint))
         })
 }
 
@@ -161,28 +223,28 @@ private fun DescriptionInput(description: String, onDescriptionChange: (String) 
         .fillMaxWidth()
         .height(150.dp),
         colors = TextFieldDefaults.textFieldColors(
-            textColor = Color.Black, containerColor = colorResource(id = R.color.bleak_yellow_light)
+            textColor = Color.Black, containerColor = Color.White
         ),
         value = description,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
         onValueChange = { onDescriptionChange(it) },
         label = {
-            Text(stringResource(id = R.string.movie_desc_input_hint))
+            Text(stringResource(id = R.string.parfume_desc_input_hint))
         })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Budget(budget: String, onBudgetChanged: (String) -> Unit) {
+private fun Price(price: String, onPriceChanged: (String) -> Unit) {
     TextField(modifier = Modifier.fillMaxWidth(),
         colors = TextFieldDefaults.textFieldColors(
-            textColor = Color.Black, containerColor = colorResource(id = R.color.bleak_yellow_light)
+            textColor = Color.Black, containerColor = Color.White
         ),
-        value = budget,
+        value = price,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        onValueChange = { onBudgetChanged(it) },
+        onValueChange = { onPriceChanged(it) },
         label = {
-            Text(stringResource(id = R.string.movie_budget_input_hint))
+            Text(stringResource(id = R.string.parfume_price_input_hint))
         })
 }
 
@@ -194,51 +256,67 @@ private fun ReleaseDate(releaseDate: String, onReleaseDateChanged: (String) -> U
             .fillMaxWidth()
             .padding(top = 10.dp)
     ) {
-        Text(
-            modifier = Modifier.padding(bottom = 3.dp),
-            text = stringResource(id = R.string.movie_release_date_input_label),
-            color = Color.Black,
-            fontSize = 16.sp,
-            fontFamily = FontFamily.SansSerif
-        )
-
+        Label(label = "Enter product release date in correct format")
         TextField(modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.textFieldColors(
-                textColor = Color.Black,
-                containerColor = colorResource(id = R.color.bleak_yellow_light)
+                textColor = Color.Black, containerColor = Color.White
             ),
             value = releaseDate,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             onValueChange = { onReleaseDateChanged(it) },
             label = {
-                Text(stringResource(id = R.string.movie_release_date_input_hint))
+                Text(stringResource(id = R.string.parfume_release_date_input_hint))
             })
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ActorsInput(actors: String, onActorsChange: (String) -> Unit) {
-    TextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(120.dp),
-        colors = TextFieldDefaults.textFieldColors(
-            textColor = Color.Black,
-            containerColor = colorResource(id = R.color.bleak_yellow_light)
-        ),
-        value = actors,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-        onValueChange = { onActorsChange(it) },
-        label = {
-            Text(stringResource(id = R.string.add_new_actors_input_hint))
+private fun VolumeOptions(
+    volumeOptions: List<Int>, selectedValues: MutableList<Int>
+) {
+    Label(label = stringResource(id = R.string.select_volumes))
+    Row(
+        modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        volumeOptions.forEachIndexed { index, volume ->
+            val isSelected = remember { mutableStateOf(selectedValues.contains(volume)) }
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(45.dp)
+                    .background(
+                        color = if (isSelected.value) colorResource(id = R.color.edit_color) else Color.White,
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .clickable {
+                        isSelected.value = !isSelected.value
+                        if (isSelected.value) {
+                            selectedValues.add(volume)
+                        } else {
+                            selectedValues.remove(volume)
+                        }
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = volume.toString(),
+                    fontSize = 16.sp,
+                    color = if (isSelected.value) Color.White else Color.Black,
+                    modifier = Modifier
+                )
+            }
+            if (index < volumeOptions.size - 1) {
+                Spacer(modifier = Modifier.width(4.dp))
+            }
         }
-    )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Rating(
+private fun Origin(
     isExpanded: Boolean,
     onExpandedChanged: (Boolean) -> Unit,
     selectedOptionText: String,
@@ -256,19 +334,19 @@ private fun Rating(
             readOnly = true,
             value = selectedOptionText,
             onValueChange = { },
-            label = { Text(stringResource(id = R.string.movie_rating_menu_hint)) },
+            label = { Text(stringResource(id = R.string.parfume_origin_menu_hint)) },
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(
                     expanded = isExpanded
                 )
             },
             colors = ExposedDropdownMenuDefaults.textFieldColors(
-                textColor = Color.Black,
-                containerColor = colorResource(id = R.color.bleak_yellow_light)
+                textColor = Color.Black, containerColor = Color.White
             )
         )
 
-        ExposedDropdownMenu(modifier = Modifier.fillMaxWidth(),
+        ExposedDropdownMenu(
+            modifier = Modifier.fillMaxWidth(),
             expanded = isExpanded,
             onDismissRequest = {
                 onExpandedChanged(false)
@@ -288,13 +366,10 @@ private fun AddNewButton(onClick: () -> Unit) {
     Button(
         onClick = {
             onClick()
-        },
-        modifier = Modifier
+        }, modifier = Modifier
             .fillMaxWidth()
-            .height(85.dp)
-            .padding(vertical = 16.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = colorResource(id = R.color.bleak_yellow), contentColor = Color.Black
+            .height(45.dp), colors = ButtonDefaults.buttonColors(
+            containerColor = colorResource(id = R.color.edit_color), contentColor = Color.White
         )
 
     ) {
@@ -304,24 +379,20 @@ private fun AddNewButton(onClick: () -> Unit) {
     }
 }
 
-private fun constructMovieIfInputValid(
-    nameInput: String?,
+private fun constructParfumeIfInputValid(
+    titleInput: String?,
+    imageInput: String?,
     descriptionInput: String?,
-    budgetInput: String?,
+    priceInput: String?,
     releaseDateInput: String?,
-    actorsInput: String?,
-    ratingInput: String?,
-    context: Context
+    originInput: String?,
+    context: Context,
+    selectedValues: List<Int>?
 ): Parfume? {
-    if (nameInput.isNullOrEmpty() ||
-        descriptionInput.isNullOrEmpty() ||
-        budgetInput.isNullOrEmpty() ||
-        releaseDateInput.isNullOrEmpty() ||
-        actorsInput.isNullOrEmpty() ||
-        ratingInput.isNullOrEmpty()
-    ) {
+    if (titleInput.isNullOrEmpty() || imageInput.isNullOrEmpty() || descriptionInput.isNullOrEmpty() || priceInput.isNullOrEmpty() || releaseDateInput.isNullOrEmpty() || originInput.isNullOrEmpty()) {
         Toast.makeText(
-            context, context.resources.getString(R.string.movie_all_fields_compulsory_warning),
+            context,
+            context.resources.getString(R.string.parfume_all_fields_compulsory_warning),
             Toast.LENGTH_SHORT
         ).show()
         return null
@@ -333,18 +404,36 @@ private fun constructMovieIfInputValid(
         dateFormat.parse(releaseDateInput)
     } catch (e: ParseException) {
         Toast.makeText(
-            context, context.resources.getString(R.string.movie_date_format_incorrect_warning),
+            context,
+            context.resources.getString(R.string.parfume_date_format_incorrect_warning),
             Toast.LENGTH_SHORT
         ).show()
         return null
     }
 
     return Parfume(
-        name = nameInput,
+        title = titleInput,
         description = descriptionInput,
-        actors = actorsInput.split(","),
-        budget = budgetInput.toInt(),
-        rating = ratingInput.toDouble(),
-        releaseDate = "$releaseDateInput 00:00:00"
+        price = priceInput.toDouble(),
+        image = imageInput,
+        origin = originInput,
+        releaseDate = "$releaseDateInput 00:00:00",
+        volumes = selectedValues as List<ParfumeResponseDoubleListItem>?,
+        isItTrue = "1"
     )
 }
+
+
+@Composable
+private fun Label(label: String) {
+    Text(
+        modifier = Modifier.padding(bottom = 3.dp),
+        text = label,
+        color = colorResource(id = R.color.grey_text),
+        fontSize = 16.sp,
+        fontFamily = FontFamily.SansSerif
+    )
+}
+
+
+

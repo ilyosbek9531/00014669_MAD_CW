@@ -4,13 +4,15 @@
     <string name="btn_add_new_parfume">Add new parfume</string>
     <string name="btn_go_player">Go to Player</string>
     <string name="title_activity_add_new_parfume">Add New Parfume</string>
-    <string name="parfume_name_input_hint">Enter parfume name</string>
+    <string name="parfume_title_input_hint">Enter parfume name</string>
+    <string name="parfume_image_input_hint">Enter img url</string>
     <string name="parfume_desc_input_hint">Enter parfume description</string>
     <string name="parfume_release_date_input_label">Enter parfume release date in the correct format:</string>
     <string name="parfume_release_date_input_hint">YYYY-MM-DD</string>
-    <string name="parfume_budget_input_hint">Parfume budget in mlns (enter whole number)</string>
+    <string name="parfume_price_input_hint">Parfume price in mlns (enter whole number)</string>
+    <string name="parfume_img_text">Parfume Img</string>
     <string name="add_new_actors_input_hint">Enter actor names, separate them by comma</string>
-    <string name="parfume_rating_menu_hint">Parfume rating</string>
+    <string name="parfume_origin_menu_hint">Country of origin</string>
     <string name="parfume_all_fields_compulsory_warning">All fields are compulsory!</string>
     <string name="parfume_date_format_incorrect_warning">Date format incorrect</string>
     <string name="save_btn_text">Save</string>
@@ -25,4 +27,7 @@
     <string name="btn_my_products">My products</string>
     <string name="btn_all_products">All products</string>
     <string name="btn_create">Create</string>
+    <string name="release_date">Release date:</string>
+    <string name="origin">Country of origin:</string>
+    <string name="select_volumes">Select volumes</string>
 </resources>
